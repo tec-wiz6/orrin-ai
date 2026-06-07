@@ -1,0 +1,55 @@
+/* Reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Layout + base colors */
+html,
+body {
+  height: 100%;
+  min-height: 100vh;
+  overflow: auto; /* keep scrolling enabled */
+  background: #050608; /* near-black, not pure black */
+  color: #f5f7fa;      /* soft white for text */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+}
+
+/* Body text + smoothing */
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Links – minimal accent usage */
+a {
+  color: #9db4ff;            /* soft blue accent */
+  text-decoration: none;
+}
+a:hover {
+  color: #c4d4ff;
+  text-decoration: underline;
+}
+
+/* Custom scrollbar (dark + subtle) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050608;        /* blend into background */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #252f3b;        /* dark grey */
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a4a5c;        /* slightly lighter on hover */
+}
