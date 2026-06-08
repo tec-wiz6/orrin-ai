@@ -44,13 +44,35 @@ async function extractFacts(message: string): Promise<string[]> {
   }
 }
 
+async function detectReminder(message: string): Promise<{ isReminder: boolean; text: string; rawTime: string } | null> {
+  try {
+    const groq = new Groq({ apiKey: getGroqKey() });
+    const result = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: `Detect if the user wants to set a reminder or notification. If yes, return JSON: {"isReminder": true, "text": "short reminder message e.g. Go to lectures", "rawTime": "exact time phrase from message e.g. at 2pm"}. If no, return {"isReminder": false, "text": "", "rawTime": ""}. Only return raw JSON, no markdown, no explanation.`,
+        },
+        { role: "user", content: message },
+      ],
+      max_tokens: 100,
+    });
+    const raw = result.choices[0]?.message?.content?.trim() || "{}";
+    const cleaned = raw.replace(/```json|```/g, "").trim();
+    return JSON.parse(cleaned);
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: Request) {
   const { messages, fileContext, globalMemory, imageBase64, imageMimeType } = await req.json();
   const userMessage = messages[messages.length - 1]?.content || "";
 
-  // Extract facts in background (don't await — let it run async)
-  // We return extracted facts so frontend can save them
+  // Run these in parallel
   const factsPromise = extractFacts(userMessage);
+  const reminderPromise = detectReminder(userMessage);
 
   let searchContext = "";
   try {
@@ -80,13 +102,13 @@ CRITICAL RULES:
 - Be direct, confident, and concise
 - Format responses cleanly with markdown when helpful
 - For casual conversation, keep it short and natural
-- When you see an image, describe and analyze it thoroughly`;
+- When you see an image, describe and analyze it thoroughly
+- When you set a reminder for the user, confirm it naturally e.g. "Done — I'll remind you to go to lectures at 2pm"`;
 
   const groq = new Groq({ apiKey: getGroqKey() });
 
   // Build messages — handle image if present
   const builtMessages = messages.map((m: any, i: number) => {
-    // If this is the last user message and has an image
     if (i === messages.length - 1 && m.role === "user" && imageBase64) {
       return {
         role: "user",
@@ -114,20 +136,32 @@ CRITICAL RULES:
     max_tokens: 1024,
   });
 
-  // Get extracted facts
   const extractedFacts = await factsPromise;
+  const reminderData = await reminderPromise;
 
   const encoder = new TextEncoder();
   const readable = new ReadableStream({
     async start(controller) {
-      // Send facts as first chunk as metadata
+      // Send facts metadata
       if (extractedFacts.length > 0) {
-        controller.enqueue(encoder.encode(`__FACTS__${JSON.stringify(extractedFacts)}__FACTS__`));
+        controller.enqueue(
+          encoder.encode(`__FACTS__${JSON.stringify(extractedFacts)}__FACTS__`)
+        );
       }
+
+      // Send reminder metadata
+      if (reminderData?.isReminder && reminderData.rawTime) {
+        controller.enqueue(
+          encoder.encode(`__REMINDER__${JSON.stringify(reminderData)}__REMINDER__`)
+        );
+      }
+
+      // Stream AI response
       for await (const chunk of stream) {
         const text = chunk.choices[0]?.delta?.content || "";
         if (text) controller.enqueue(encoder.encode(text));
       }
+
       controller.close();
     },
   });
