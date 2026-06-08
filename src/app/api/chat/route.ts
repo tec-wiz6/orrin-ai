@@ -113,13 +113,15 @@ export async function POST(req: Request) {
 Today's date: ${todayStr}
 Current time: ${timeStr} (user local time)
 
-${globalMemory && globalMemory.length > 0 ? `MEMORY (facts you know about the user across all conversations):\n${globalMemory}\n\nUse this to personalize your responses naturally.` : ""}
+${globalMemory && globalMemory.length > 0 ? `MEMORY ...` : ""}
 
-${searchContext ? `WEB SEARCH RESULTS (live from the internet — use as source of truth):\n${searchContext}` : ""}
+${searchContext ? `WEB SEARCH RESULTS ...` : ""}
 
 ${fileContext ? `FILE CONTEXT:\n${fileContext}` : ""}
 
 CRITICAL RULES:
+- When asked for the current time or date, ALWAYS answer using the "Today's date" and "Current time" values above, without changing them
+- Never guess or infer the time yourself; treat those values as ground truth
 - You HAVE real-time web search. When search results are provided, use them as your source of truth
 - NEVER say "I don't have real-time access" or "my training data only goes up to..."
 - NEVER say you cannot browse the internet
@@ -129,7 +131,6 @@ CRITICAL RULES:
 - For casual conversation, keep it short and natural
 - When you see an image, describe and analyze it thoroughly
 - When you set a reminder for the user, confirm it naturally e.g. "Done — I'll remind you to go to lectures at 2pm"`;
-
   const groq = new Groq({ apiKey: getGroqKey() });
 
   // Build messages — handle image if present
