@@ -1,109 +1,88 @@
-const REMINDERS_KEY = "orrin_reminders";
+// public/sw.js
 
-// Check every 60 seconds independently
+const REMINDERS_CACHE = "orrin-reminders";
+const REMINDERS_KEY = "reminders";
+
+// Check every 60 seconds
 setInterval(async () => {
   const now = Date.now();
-  
-  // Get all clients
-  const clients = await self.clients.matchAll();
-  
-  if (clients.length > 0) {
-    // Ask page for reminders
-    clients[0].postMessage({ type: "GET_REMINDERS" });
-  } else {
-    // No page open — check via cache
-    try {
-      const cache = await caches.open("orrin-reminders");
-      const response = await cache.match("reminders");
-      if (response) {
-        const reminders = await response.json();
-        reminders.forEach(r => {
-          if (!r.fired && r.time <= now) {
-            self.registration.showNotification("Orrin", {
-              body: r.text,
-              icon: "/icons/orrin-192.png",
-              badge: "/icons/orrin-192.png",
-              tag: r.id,
-              requireInteraction: true,
-            });
-          }
-        });
-      }
-    } catch (err) {
-      console.error("SW reminder check error:", err);
+
+  try {
+    const clients = await self.clients.matchAll({ type: "window" });
+
+    if (clients.length > 0) {
+      // Page is open — ask it to send reminders
+      clients[0].postMessage({ type: "GET_REMINDERS" });
+    } else {
+      // No page open — read reminders directly from Cache API
+      const cache = await caches.open(REMINDERS_CACHE);
+      const response = await cache.match(REMINDERS_KEY);
+      if (!response) return;
+
+      const reminders = await response.json();
+      reminders.forEach(r => {
+        if (!r.fired && r.time <= now) {
+          self.registration.showNotification("Orrin", {
+            body: r.text,
+            icon: "/icons/orrin-192.png,
+            badge: "/icons/orrin-192.png",
+            tag: r.id,
+            requireInteraction: true,
+            data: { reminderId: r.id },
+          });
+        }
+      });
     }
+  } catch (err) {
+    console.error("SW interval reminder error:", err);
   }
 }, 60000);
 
-// Also check on activation and claim clients
+// Claim clients on activate so we can talk to open tabs immediately
 self.addEventListener("activate", event => {
   event.waitUntil(self.clients.claim());
 });
 
-// Handle messages from the client
-self.addEventListener("message", (event) => {
-  if (event.data?.type === "GET_REMINDERS") {
-    // Page is responding with reminders data — no action needed here
-  }
-  
-  if (event.data?.type === "REMINDERS_DATA") {
-    const reminders = event.data.reminders || [];
+// Handle messages from the page
+self.addEventListener("message", event => {
+  const data = event.data || {};
+
+  // Page is sending its current reminders
+  if (data.type === "REMINDERS_DATA") {
+    const reminders = data.reminders || [];
     const now = Date.now();
 
-    reminders.forEach((reminder) => {
-      if (!reminder.fired && reminder.time <= now) {
+    reminders.forEach(r => {
+      if (!r.fired && r.time <= now) {
         self.registration.showNotification("Orrin", {
-          body: reminder.text,
+          body: r.text,
           icon: "/icons/orrin-192.png",
           badge: "/icons/orrin-192.png",
-          tag: reminder.id,
+          tag: r.id,
           requireInteraction: true,
-          data: { reminderId: reminder.id },
+          data: { reminderId: r.id },
         });
 
-        // Tell client to mark as fired
-        self.clients.matchAll().then(clients => {
-          clients.forEach(client => {
-            client.postMessage({ type: "MARK_FIRED", reminderId: reminder.id });
-          });
+        // Ask all clients to mark this reminder as fired
+        self.clients.matchAll({ type: "window" }).then(clients => {
+          clients.forEach(c =>
+            c.postMessage({ type: "MARK_FIRED", reminderId: r.id })
+          );
         });
       }
     });
   }
-  
-  if (event.data?.type === "MARK_FIRED") {
-    markFired(event.data.reminderId);
-  }
 });
 
-// Handle notification click
-self.addEventListener("notificationclick", (event) => {
+// Focus or open the app when a notification is clicked
+self.addEventListener("notificationclick", event => {
   event.notification.close();
   event.waitUntil(
     self.clients.matchAll({ type: "window" }).then(clients => {
       if (clients.length > 0) {
-        clients[0].focus();
-      } else {
-        self.clients.openWindow("/");
+        return clients[0].focus();
       }
+      return self.clients.openWindow("/");
     })
   );
 });
-
-// Helper to mark reminder as fired (store in cache)
-async function markFired(reminderId) {
-  try {
-    const cache = await caches.open("orrin-reminders");
-    const response = await cache.match("reminders");
-    if (response) {
-      const reminders = await response.json();
-      const reminder = reminders.find(r => r.id === reminderId);
-      if (reminder) {
-        reminder.fired = true;
-        await cache.put("reminders", new Response(JSON.stringify(reminders)));
-      }
-    }
-  } catch (err) {
-    console.error("SW markFired error:", err);
-  }
-}
