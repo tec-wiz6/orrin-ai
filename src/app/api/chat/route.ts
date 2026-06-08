@@ -44,7 +44,9 @@ async function extractFacts(message: string): Promise<string[]> {
   }
 }
 
-async function detectReminder(message: string): Promise<{ isReminder: boolean; text: string; rawTime: string } | null> {
+async function detectReminder(
+  message: string
+): Promise<{ isReminder: boolean; text: string; rawTime: string } | null> {
   try {
     const groq = new Groq({ apiKey: getGroqKey() });
     const result = await groq.chat.completions.create({
@@ -67,7 +69,8 @@ async function detectReminder(message: string): Promise<{ isReminder: boolean; t
 }
 
 export async function POST(req: Request) {
-  const { messages, fileContext, globalMemory, imageBase64, imageMimeType } = await req.json();
+  const { messages, fileContext, globalMemory, imageBase64, imageMimeType } =
+    await req.json();
   const userMessage = messages[messages.length - 1]?.content || "";
 
   // Run these in parallel
@@ -84,9 +87,24 @@ export async function POST(req: Request) {
     console.warn("Search failed:", e);
   }
 
+  // ---- Time + date context ----
+  const now = new Date();
+  const todayStr = now.toLocaleDateString("en-GB", {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+  const timeStr = now.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+
   const systemPrompt = `You are Orrin, a personal AI agent built for Abdullah. You are fast, direct, and fully capable.
 
-Today's date: ${new Date().toLocaleDateString("en-GB", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+Today's date: ${todayStr}
+Current time: ${timeStr} WAT
 
 ${globalMemory && globalMemory.length > 0 ? `MEMORY (facts you know about the user across all conversations):\n${globalMemory}\n\nUse this to personalize your responses naturally.` : ""}
 
@@ -127,11 +145,10 @@ CRITICAL RULES:
   });
 
   const stream = await groq.chat.completions.create({
-    model: imageBase64 ? "meta-llama/llama-4-scout-17b-16e-instruct" : "llama-3.3-70b-versatile",
-    messages: [
-      { role: "system", content: systemPrompt },
-      ...builtMessages,
-    ],
+    model: imageBase64
+      ? "meta-llama/llama-4-scout-17b-16e-instruct"
+      : "llama-3.3-70b-versatile",
+    messages: [{ role: "system", content: systemPrompt }, ...builtMessages],
     stream: true,
     max_tokens: 1024,
   });
@@ -145,14 +162,18 @@ CRITICAL RULES:
       // Send facts metadata
       if (extractedFacts.length > 0) {
         controller.enqueue(
-          encoder.encode(`__FACTS__${JSON.stringify(extractedFacts)}__FACTS__`)
+          encoder.encode(
+            `__FACTS__${JSON.stringify(extractedFacts)}__FACTS__`
+          )
         );
       }
 
       // Send reminder metadata
       if (reminderData?.isReminder && reminderData.rawTime) {
         controller.enqueue(
-          encoder.encode(`__REMINDER__${JSON.stringify(reminderData)}__REMINDER__`)
+          encoder.encode(
+            `__REMINDER__${JSON.stringify(reminderData)}__REMINDER__`
+          )
         );
       }
 
