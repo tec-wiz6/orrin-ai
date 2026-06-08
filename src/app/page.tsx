@@ -684,17 +684,20 @@ export default function Orrin() {
     const currentMemory = activeChat?.memory ? loadGlobalMemory() : "";
 
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: history,
-          fileContext: combinedFileContext,
-          globalMemory: currentMemory,
-          imageBase64: curImageBase64,
-          imageMimeType: curImageMimeType,
-        }),
-      });
+      const clientNow = Date.now();
+
+const res = await fetch("/api/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    messages: history,
+    fileContext: combinedFileContext,
+    globalMemory: currentMemory,
+    imageBase64: curImageBase64,
+    imageMimeType: curImageMimeType,
+    clientNow, // <-- added
+  }),
+});
 
       if (!res.ok || !res.body) throw new Error("Bad response");
 
@@ -1315,7 +1318,7 @@ export default function Orrin() {
         <div
           style={{
             flexShrink: 0,
-            padding: isMobile ? "12px 14px" : "11px 20px",
+            padding: isMobile ? "10px 12px" : "8px 16px",
             borderBottom: "1px solid #0f0f0f",
             display: "flex",
             alignItems: "center",
@@ -1479,14 +1482,14 @@ export default function Orrin() {
 
         {/* Chat area */}
         <div
-          ref={chatRef}
-          onScroll={handleScroll}
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: isMobile ? "16px 0" : "20px 0",
-          }}
-        >
+  ref={chatRef}
+  onScroll={handleScroll}
+  style={{
+    flex: 1,
+    overflowY: "auto",
+    padding: isMobile ? "12px 0" : "8px 0",
+  }}
+>
           {messages.length === 0 && (
             <div
               style={{
