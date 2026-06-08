@@ -69,8 +69,15 @@ async function detectReminder(
 }
 
 export async function POST(req: Request) {
-  const { messages, fileContext, globalMemory, imageBase64, imageMimeType } =
-    await req.json();
+  const {
+    messages,
+    fileContext,
+    globalMemory,
+    imageBase64,
+    imageMimeType,
+    clientNow, // <-- added
+  } = await req.json();
+
   const userMessage = messages[messages.length - 1]?.content || "";
 
   // Run these in parallel
@@ -87,8 +94,8 @@ export async function POST(req: Request) {
     console.warn("Search failed:", e);
   }
 
-  // ---- Time + date context ----
-  const now = new Date();
+  // ---- Use client time if provided ----
+  const now = clientNow ? new Date(clientNow) : new Date();
   const todayStr = now.toLocaleDateString("en-GB", {
     weekday: "long",
     year: "numeric",
@@ -104,7 +111,7 @@ export async function POST(req: Request) {
   const systemPrompt = `You are Orrin, a personal AI agent built for Abdullah. You are fast, direct, and fully capable.
 
 Today's date: ${todayStr}
-Current time: ${timeStr} WAT
+Current time: ${timeStr} (user local time)
 
 ${globalMemory && globalMemory.length > 0 ? `MEMORY (facts you know about the user across all conversations):\n${globalMemory}\n\nUse this to personalize your responses naturally.` : ""}
 
