@@ -3,51 +3,21 @@
 const REMINDERS_CACHE = "orrin-reminders";
 const REMINDERS_KEY = "reminders";
 
-// Check every 60 seconds
-setInterval(async () => {
-  const now = Date.now();
-
-  try {
-    const clients = await self.clients.matchAll({ type: "window" });
-
-    if (clients.length > 0) {
-      // Page is open — ask it to send reminders
-      clients[0].postMessage({ type: "GET_REMINDERS" });
-    } else {
-      // No page open — read reminders directly from Cache API
-      const cache = await caches.open(REMINDERS_CACHE);
-      const response = await cache.match(REMINDERS_KEY);
-      if (!response) return;
-
-      const reminders = await response.json();
-      reminders.forEach(r => {
-        if (!r.fired && r.time <= now) {
-          self.registration.showNotification("Orrin", {
-            body: r.text,
-            icon: "/icons/orrin-192.png,
-            badge: "/icons/orrin-192.png",
-            tag: r.id,
-            requireInteraction: true,
-            data: { reminderId: r.id },
-          });
-        }
-      });
-    }
-  } catch (err) {
-    console.error("SW interval reminder error:", err);
-  }
+// Check reminders every 60 seconds
+setInterval(() => {
+  checkReminders();
 }, 60000);
 
-// Claim clients on activate so we can talk to open tabs immediately
+// Also check when the SW is activated
 self.addEventListener("activate", event => {
   event.waitUntil(self.clients.claim());
 });
 
-// Handle messages from the page
+// Handle messages from the client
 self.addEventListener("message", event => {
   const data = event.data || {};
 
-  // Page is sending its current reminders
+  // Page is sending reminders data
   if (data.type === "REMINDERS_DATA") {
     const reminders = data.reminders || [];
     const now = Date.now();
@@ -74,7 +44,7 @@ self.addEventListener("message", event => {
   }
 });
 
-// Focus or open the app when a notification is clicked
+// When user clicks a notification, focus/open the app
 self.addEventListener("notificationclick", event => {
   event.notification.close();
   event.waitUntil(
@@ -86,3 +56,40 @@ self.addEventListener("notificationclick", event => {
     })
   );
 });
+
+// Core reminder check logic
+async function checkReminders() {
+  const now = Date.now();
+
+  try {
+    const clients = await self.clients.matchAll({ type: "window" });
+
+    if (clients.length > 0) {
+      // Page is open — ask it to send reminders
+      clients[0].postMessage({ type: "GET_REMINDERS" });
+    } else {
+      // No page open — read reminders directly from Cache API
+      if (!("caches" in self)) return;
+
+      const cache = await caches.open(REMINDERS_CACHE);
+      const response = await cache.match(REMINDERS_KEY);
+      if (!response) return;
+
+      const reminders = await response.json();
+      reminders.forEach(r => {
+        if (!r.fired && r.time <= now) {
+          self.registration.showNotification("Orrin", {
+            body: r.text,
+            icon: "/icons/orrin-192.png",
+            badge: "/icons/orrin-192.png",
+            tag: r.id,
+            requireInteraction: true,
+            data: { reminderId: r.id },
+          });
+        }
+      });
+    }
+  } catch (err) {
+    console.error("SW reminder check error:", err);
+  }
+}
