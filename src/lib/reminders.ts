@@ -109,6 +109,3 @@ export function parseReminderTime(text: string): number | null {
 
   return null;
 }
-
-  return null;
-}
