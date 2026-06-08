@@ -4,8 +4,8 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Send, Paperclip, X, Plus, MessageSquare, Trash2,
   ChevronDown, Download, Brain, Video, Music, Loader2,
-  ExternalLink, Image as ImageIcon, Save, Bell, BellOff,
-  Clock, Menu, ArrowLeft, Settings
+  ExternalLink, Image as ImageIcon, Save, Bell,
+  Clock, Menu,
 } from "lucide-react";
 import {
   loadReminders, addReminder, markFired, deleteReminder,
@@ -144,35 +144,109 @@ function VideoCardUI({ card, messageId, onDownload, onDelete }: {
   return (
     <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", borderRadius: 10, overflow: "hidden", maxWidth: 400, marginTop: 10 }}>
       <div style={{ position: "relative", aspectRatio: "16/9", background: "#111" }}>
-        {card.thumbnail && <img src={card.thumbnail} alt={card.title} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />}
-        {card.duration > 0 && <div style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(0,0,0,0.85)", borderRadius: 4, padding: "2px 6px", fontSize: 11, color: "#888", fontFamily: "'Geist Mono', monospace" }}>{formatDuration(card.duration)}</div>}
-        <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(0,0,0,0.75)", borderRadius: 4, padding: "2px 7px", fontSize: 10, color: "#555", fontFamily: "'Geist Mono', monospace" }}>{card.platform?.toUpperCase()}</div>
+        {card.thumbnail && (
+          <img
+            src={card.thumbnail}
+            alt={card.title}
+            style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }}
+            onError={e => { (e.target as HTMLImageElement).style.display = "none"; }}
+          />
+        )}
+        {card.duration > 0 && (
+          <div style={{
+            position: "absolute", bottom: 8, right: 8,
+            background: "rgba(0,0,0,0.85)", borderRadius: 4,
+            padding: "2px 6px", fontSize: 11, color: "#888",
+            fontFamily: "'Geist Mono', monospace"
+          }}>
+            {formatDuration(card.duration)}
+          </div>
+        )}
+        <div style={{
+          position: "absolute", top: 8, left: 8,
+          background: "rgba(0,0,0,0.75)", borderRadius: 4,
+          padding: "2px 7px", fontSize: 10, color: "#555",
+          fontFamily: "'Geist Mono', monospace"
+        }}>
+          {card.platform?.toUpperCase()}
+        </div>
       </div>
       <div style={{ padding: "10px 12px 4px" }}>
-        <p style={{ fontSize: 12, fontWeight: 500, color: "#ccc", lineHeight: 1.3, marginBottom: 2 }}>{card.title?.slice(0, 72)}{(card.title?.length || 0) > 72 ? "…" : ""}</p>
-        <p style={{ fontSize: 10, color: "#444", marginBottom: 10, fontFamily: "'Geist Mono', monospace" }}>{card.uploader}</p>
+        <p style={{
+          fontSize: 12, fontWeight: 500, color: "#ccc", lineHeight: 1.3,
+          marginBottom: 2
+        }}>
+          {card.title?.slice(0, 72)}{(card.title?.length || 0) > 72 ? "…" : ""}
+        </p>
+        <p style={{
+          fontSize: 10, color: "#444", marginBottom: 10,
+          fontFamily: "'Geist Mono', monospace"
+        }}>
+          {card.uploader}
+        </p>
       </div>
       <div style={{ padding: "0 12px", display: "flex", flexDirection: "column", gap: 4 }}>
-        <p style={{ fontSize: 9, color: "#333", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3, fontFamily: "'Geist Mono', monospace" }}>Select format</p>
+        <p style={{
+          fontSize: 9, color: "#333", textTransform: "uppercase",
+          letterSpacing: "0.08em", marginBottom: 3,
+          fontFamily: "'Geist Mono', monospace"
+        }}>
+          Select format
+        </p>
         {card.formats?.slice(0, 5).map(fmt => (
-          <button key={fmt.format_id} onClick={() => onDownload(messageId, fmt)} disabled={!!card.downloading}
-            style={{ background: "#111", border: "1px solid #1a1a1a", borderRadius: 6, padding: "7px 10px", display: "flex", alignItems: "center", justifyContent: "space-between", cursor: card.downloading ? "default" : "pointer", opacity: card.downloading && card.downloading !== fmt.format_id ? 0.3 : 1 }}>
+          <button
+            key={fmt.format_id}
+            onClick={() => onDownload(messageId, fmt)}
+            disabled={!!card.downloading}
+            style={{
+              background: "#111", border: "1px solid #1a1a1a",
+              borderRadius: 6, padding: "7px 10px",
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              cursor: card.downloading ? "default" : "pointer",
+              opacity: card.downloading && card.downloading !== fmt.format_id ? 0.3 : 1
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
               {fmt.height === 0 ? <Music size={10} color="#444" /> : <Video size={10} color="#444" />}
-              <span style={{ fontSize: 11, color: "#888", fontFamily: "'Geist Mono', monospace" }}>{fmt.label}</span>
+              <span style={{ fontSize: 11, color: "#888", fontFamily: "'Geist Mono', monospace" }}>
+                {fmt.label}
+              </span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 10, color: "#333", fontFamily: "'Geist Mono', monospace" }}>{formatSize(fmt.filesize)}</span>
-              {card.downloading === fmt.format_id ? <Loader2 size={10} color="#666" style={{ animation: "spin 1s linear infinite" }} /> : <Download size={10} color="#333" />}
+              <span style={{ fontSize: 10, color: "#333", fontFamily: "'Geist Mono', monospace" }}>
+                {formatSize(fmt.filesize)}
+              </span>
+              {card.downloading === fmt.format_id
+                ? <Loader2 size={10} color="#666" style={{ animation: "spin 1s linear infinite" }} />
+                : <Download size={10} color="#333" />}
             </div>
           </button>
         ))}
       </div>
-      <div style={{ borderTop: "1px solid #141414", padding: "8px 12px", marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <a href={card.url} target="_blank" rel="noreferrer" style={{ fontSize: 10, color: "#333", display: "flex", alignItems: "center", gap: 4, textDecoration: "none", fontFamily: "'Geist Mono', monospace" }}>
+      <div style={{
+        borderTop: "1px solid #141414", padding: "8px 12px", marginTop: 10,
+        display: "flex", alignItems: "center", justifyContent: "space-between"
+      }}>
+        <a
+          href={card.url}
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            fontSize: 10, color: "#333", display: "flex",
+            alignItems: "center", gap: 4, textDecoration: "none",
+            fontFamily: "'Geist Mono', monospace"
+          }}
+        >
           <ExternalLink size={9} /> OPEN
         </a>
-        <button onClick={() => onDelete(messageId)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 10, color: "#222", display: "flex", alignItems: "center", gap: 4, fontFamily: "'Geist Mono', monospace" }}>
+        <button
+          onClick={() => onDelete(messageId)}
+          style={{
+            background: "none", border: "none", cursor: "pointer",
+            fontSize: 10, color: "#222", display: "flex",
+            alignItems: "center", gap: 4, fontFamily: "'Geist Mono', monospace"
+          }}
+        >
           <Trash2 size={9} /> REMOVE
         </button>
       </div>
@@ -251,31 +325,39 @@ export default function Orrin() {
         }
         if (event.data?.type === "MARK_FIRED") {
           markFired(event.data.reminderId);
-          setReminders(loadReminders());
+          const updated = loadReminders();
+          setReminders(updated);
+          // Update cache so SW sees latest reminders
+          if ("caches" in window) {
+            caches.open("orrin-reminders").then(cache => {
+              cache.put("reminders", new Response(JSON.stringify(updated)));
+            });
+          }
         }
       });
     }
 
-    // In-page reminder check every 30s
-    const interval = setInterval(() => {
-      const current = loadReminders();
-      const now = Date.now();
-      let changed = false;
-      current.forEach(r => {
-        if (!r.fired && r.time <= now && Notification.permission === "granted") {
-          new Notification("Orrin", { body: r.text, icon: "/icon-192.png" });
-          markFired(r.id);
-          changed = true;
-        }
+    // Initial sync of reminders to Cache API for SW access
+    if ("caches" in window) {
+      caches.open("orrin-reminders").then(cache => {
+        const allReminders = loadReminders();
+        cache.put("reminders", new Response(JSON.stringify(allReminders)));
       });
-      if (changed) setReminders(loadReminders());
-    }, 30000);
+    }
 
     return () => {
-      clearInterval(interval);
       window.removeEventListener("resize", checkMobile);
     };
   }, []);
+
+  // Keep Cache API in sync whenever reminders change
+  useEffect(() => {
+    if ("caches" in window) {
+      caches.open("orrin-reminders").then(cache => {
+        cache.put("reminders", new Response(JSON.stringify(reminders)));
+      });
+    }
+  }, [reminders]);
 
   useEffect(() => {
     if (chats.length > 0) {
@@ -413,10 +495,12 @@ export default function Orrin() {
       if (data.summary) {
         updateChat(activeChatId, c => ({
           ...c,
-          messages: c.messages.map(m => m.id === msgId ? { ...m, content: m.content + "\n\n" + data.summary } : m),
+          messages: c.messages.map(m =>
+            m.id === msgId ? { ...m, content: m.content + "\n\n" + data.summary } : m
+          ),
         }));
       }
-    } catch {}
+    } catch { }
   };
 
   // ── Video ──────────────────────────────────────────────────────────────────
@@ -435,16 +519,25 @@ export default function Orrin() {
       if (data.error) throw new Error(data.error);
       updateChat(activeChatId, c => ({
         ...c,
-        messages: c.messages.map(m => m.id === msgId ? {
-          ...m, videoCard: {
-            url, title: data.title, thumbnail: data.thumbnail,
-            duration: data.duration, uploader: data.uploader,
-            platform: data.platform, formats: data.formats,
-            downloading: null, downloaded: false,
-          }
-        } : m),
+        messages: c.messages.map(m =>
+          m.id === msgId
+            ? {
+              ...m, videoCard: {
+                url,
+                title: data.title,
+                thumbnail: data.thumbnail,
+                duration: data.duration,
+                uploader: data.uploader,
+                platform: data.platform,
+                formats: data.formats,
+                downloading: null,
+                downloaded: false,
+              }
+            }
+            : m
+        ),
       }));
-    } catch {}
+    } catch { }
     setFetchingVideo(false);
   };
 
@@ -453,17 +546,28 @@ export default function Orrin() {
     if (!msg?.videoCard) return;
     updateChat(activeChatId, c => ({
       ...c,
-      messages: c.messages.map(m => m.id === messageId ? { ...m, videoCard: { ...m.videoCard!, downloading: format.format_id } } : m),
+      messages: c.messages.map(m =>
+        m.id === messageId
+          ? { ...m, videoCard: { ...m.videoCard!, downloading: format.format_id } }
+          : m
+      ),
     }));
     try {
       const formatId = format.type === "video_only" && format.bestAudioFormatId
-        ? `${format.format_id}+${format.bestAudioFormatId}` : format.format_id;
+        ? `${format.format_id}+${format.bestAudioFormatId}`
+        : format.format_id;
       const controller = new AbortController();
       setTimeout(() => controller.abort(), 120000);
       const res = await fetch(`${HF_API}/download`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: msg.videoCard.url, format_id: formatId, ext: format.ext, title: msg.videoCard.title, merge: format.type === "video_only" }),
+        body: JSON.stringify({
+          url: msg.videoCard.url,
+          format_id: formatId,
+          ext: format.ext,
+          title: msg.videoCard.title,
+          merge: format.type === "video_only",
+        }),
         signal: controller.signal,
       });
       if (!res.ok) throw new Error("Download failed");
@@ -477,12 +581,20 @@ export default function Orrin() {
       URL.revokeObjectURL(a.href);
       updateChat(activeChatId, c => ({
         ...c,
-        messages: c.messages.map(m => m.id === messageId ? { ...m, videoCard: { ...m.videoCard!, downloading: null, downloaded: true } } : m),
+        messages: c.messages.map(m =>
+          m.id === messageId
+            ? { ...m, videoCard: { ...m.videoCard!, downloading: null, downloaded: true } }
+            : m
+        ),
       }));
     } catch {
       updateChat(activeChatId, c => ({
         ...c,
-        messages: c.messages.map(m => m.id === messageId ? { ...m, videoCard: { ...m.videoCard!, downloading: null } } : m),
+        messages: c.messages.map(m =>
+          m.id === messageId
+            ? { ...m, videoCard: { ...m.videoCard!, downloading: null } }
+            : m
+        ),
       }));
     }
   };
@@ -490,7 +602,9 @@ export default function Orrin() {
   const deleteVideoCard = (messageId: string) => {
     updateChat(activeChatId, c => ({
       ...c,
-      messages: c.messages.map(m => m.id === messageId ? { ...m, videoCard: undefined } : m),
+      messages: c.messages.map(m =>
+        m.id === messageId ? { ...m, videoCard: undefined } : m
+      ),
     }));
   };
 
@@ -504,12 +618,19 @@ export default function Orrin() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [{ role: "user", content: `Summarize this conversation concisely:\n\n${history}` }] }),
+        body: JSON.stringify({
+          messages: [{ role: "user", content: `Summarize this conversation concisely:\n\n${history}` }],
+        }),
       });
       const summary = await res.text();
       updateChat(activeChatId, c => ({
         ...c,
-        messages: [{ id: genId(), role: "assistant", content: `📦 **Compressed**\n\n${summary}`, timestamp: Date.now() }],
+        messages: [{
+          id: genId(),
+          role: "assistant",
+          content: `📦 **Compressed**\n\n${summary}`,
+          timestamp: Date.now(),
+        }],
       }));
       setStorageInfo(getStorageInfo());
     } catch { alert("Compression failed."); }
@@ -524,14 +645,29 @@ export default function Orrin() {
     const isVideoUrl = VIDEO_REGEX.test(text);
     const isUrl = !isVideoUrl && URL_REGEX.test(text);
     const combinedFileContext = fileContexts.length > 0
-      ? fileContexts.map(f => `--- FILE: ${f.name} ---\n${f.content}`).join("\n\n") : null;
+      ? fileContexts.map(f => `--- FILE: ${f.name} ---\n${f.content}`).join("\n\n")
+      : null;
 
-    const userMsg: Message = { id: genId(), role: "user", content: text, timestamp: Date.now(), imagePreview: imagePreviewUrl || undefined };
+    const userMsg: Message = {
+      id: genId(),
+      role: "user",
+      content: text,
+      timestamp: Date.now(),
+      imagePreview: imagePreviewUrl || undefined,
+    };
     const assistantId = genId();
-    const assistantMsg: Message = { id: assistantId, role: "assistant", content: "", timestamp: Date.now() };
+    const assistantMsg: Message = {
+      id: assistantId,
+      role: "assistant",
+      content: "",
+      timestamp: Date.now(),
+    };
 
     updateChatTitle(activeChatId, text);
-    updateChat(activeChatId, c => ({ ...c, messages: [...c.messages, userMsg, assistantMsg] }));
+    updateChat(activeChatId, c => ({
+      ...c,
+      messages: [...c.messages, userMsg, assistantMsg],
+    }));
     setInput("");
     const curImageBase64 = imageBase64;
     const curImageMimeType = imageMimeType;
@@ -541,7 +677,10 @@ export default function Orrin() {
     setStreaming(true);
     streamingIdRef.current = assistantId;
 
-    const history = [...messages, userMsg].map(m => ({ role: m.role, content: m.content }));
+    const history = [...messages, userMsg].map(m => ({
+      role: m.role,
+      content: m.content,
+    }));
     const currentMemory = activeChat?.memory ? loadGlobalMemory() : "";
 
     try {
@@ -582,7 +721,7 @@ export default function Orrin() {
                   setGlobalMemory(newMem);
                   setMemoryEdited(newMem);
                 }
-              } catch {}
+              } catch { }
             } else chunk += parts[i];
           }
         }
@@ -610,7 +749,7 @@ export default function Orrin() {
                     setReminders(loadReminders());
                   }
                 }
-              } catch {}
+              } catch { }
             } else chunk += parts[i];
           }
         }
@@ -619,18 +758,23 @@ export default function Orrin() {
         const id = streamingIdRef.current;
         updateChat(activeChatId, c => ({
           ...c,
-          messages: c.messages.map(m => m.id === id ? { ...m, content: full } : m),
+          messages: c.messages.map(m =>
+            m.id === id ? { ...m, content: full } : m
+          ),
         }));
       }
 
       if (isVideoUrl) await fetchVideoCard(text, assistantId);
       else if (isUrl) await summarizeUrl(text, assistantId);
-
     } catch {
       const id = streamingIdRef.current;
       updateChat(activeChatId, c => ({
         ...c,
-        messages: c.messages.map(m => m.id === id ? { ...m, content: "Something went wrong. Please try again." } : m),
+        messages: c.messages.map(m =>
+          m.id === id
+            ? { ...m, content: "Something went wrong. Please try again." }
+            : m
+        ),
       }));
     }
 
@@ -649,11 +793,23 @@ export default function Orrin() {
   };
 
   const pendingReminders = reminders.filter(r => !r.fired);
-  const storageColor = storageInfo.percent > 75 ? "#ef4444" : storageInfo.percent > 50 ? "#f59e0b" : "#333";
+  const storageColor =
+    storageInfo.percent > 75 ? "#ef4444" :
+      storageInfo.percent > 50 ? "#f59e0b" : "#333";
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "#080808", overflow: "hidden", fontFamily: "'Geist', sans-serif", position: "relative" }}>
+    <div
+      style={{
+        height: "100dvh",
+        display: "flex",
+        flexDirection: "column",
+        background: "#080808",
+        overflow: "hidden",
+        fontFamily: "'Geist', sans-serif",
+        position: "relative",
+      }}
+    >
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap');
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -688,30 +844,70 @@ export default function Orrin() {
 
       {/* ── Sidebar Overlay (mobile) ─────────────────────────────────────────── */}
       {sidebarOpen && isMobile && (
-        <div onClick={() => setSidebarOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 40, backdropFilter: "blur(4px)" }} />
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            zIndex: 40,
+            backdropFilter: "blur(4px)",
+          }}
+        />
       )}
 
       {/* ── Sidebar ─────────────────────────────────────────────────────────── */}
-      <div style={{
-        position: isMobile ? "fixed" : "relative",
-        left: 0, top: 0, bottom: 0,
-        width: isMobile ? "80vw" : (sidebarOpen ? 240 : 0),
-        maxWidth: isMobile ? 300 : undefined,
-        background: "#0a0a0a",
-        borderRight: sidebarOpen ? "1px solid #111" : "none",
-        display: "flex",
-        flexDirection: "column",
-        overflow: "hidden",
-        zIndex: isMobile ? 50 : 1,
-        transform: sidebarOpen ? "translateX(0)" : (isMobile ? "translateX(-100%)" : "translateX(0)"),
-        transition: "all 0.25s ease",
-        flexShrink: 0,
-      }}>
+      <div
+        style={{
+          position: isMobile ? "fixed" : "relative",
+          left: 0,
+          top: 0,
+          bottom: 0,
+          width: isMobile ? "80vw" : (sidebarOpen ? 240 : 0),
+          maxWidth: isMobile ? 300 : undefined,
+          background: "#0a0a0a",
+          borderRight: sidebarOpen ? "1px solid #111" : "none",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          zIndex: isMobile ? 50 : 1,
+          transform: sidebarOpen ? "translateX(0)" : (isMobile ? "translateX(-100%)" : "translateX(0)"),
+          transition: "all 0.25s ease",
+          flexShrink: 0,
+        }}
+      >
         {/* Sidebar header */}
-        <div style={{ padding: "14px 12px 10px", borderBottom: "1px solid #0f0f0f", flexShrink: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-            <span style={{ fontSize: 12, fontWeight: 600, letterSpacing: "0.12em", color: "#e8e8e8", fontFamily: "'Geist Mono', monospace" }}>ORRIN</span>
-            <button className="icon-btn" onClick={() => setSidebarOpen(false)} style={{ color: "#333", padding: 4 }}>
+        <div
+          style={{
+            padding: "14px 12px 10px",
+            borderBottom: "1px solid #0f0f0f",
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 12,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: "0.12em",
+                color: "#e8e8e8",
+                fontFamily: "'Geist Mono', monospace",
+              }}
+            >
+              ORRIN
+            </span>
+            <button
+              className="icon-btn"
+              onClick={() => setSidebarOpen(false)}
+              style={{ color: "#333", padding: 4 }}
+            >
               <X size={13} />
             </button>
           </div>
@@ -719,23 +915,40 @@ export default function Orrin() {
           {/* Tabs */}
           <div style={{ display: "flex", gap: 3, marginBottom: 10 }}>
             {(["chats", "memory", "reminders"] as const).map(tab => (
-              <button key={tab} className="tab-btn" onClick={() => setSidebarTab(tab)} style={{
-                background: sidebarTab === tab ? "#141414" : "transparent",
-                border: `1px solid ${sidebarTab === tab ? "#1e1e1e" : "transparent"}`,
-                color: sidebarTab === tab ? "#777" : "#2a2a2a",
-              }}>
+              <button
+                key={tab}
+                className="tab-btn"
+                onClick={() => setSidebarTab(tab)}
+                style={{
+                  background: sidebarTab === tab ? "#141414" : "transparent",
+                  border: `1px solid ${sidebarTab === tab ? "#1e1e1e" : "transparent"}`,
+                  color: sidebarTab === tab ? "#777" : "#2a2a2a",
+                }}
+              >
                 {tab === "reminders" ? "⏰" : tab.toUpperCase().slice(0, 3)}
               </button>
             ))}
           </div>
 
           {sidebarTab === "chats" && (
-            <button onClick={newChat} style={{
-              width: "100%", background: "#0f0f0f", border: "1px solid #1a1a1a",
-              borderRadius: 7, padding: "8px 12px", color: "#555", fontSize: 12,
-              cursor: "pointer", display: "flex", alignItems: "center", gap: 7,
-              fontFamily: "'Geist', sans-serif", transition: "all 0.1s",
-            }}>
+            <button
+              onClick={newChat}
+              style={{
+                width: "100%",
+                background: "#0f0f0f",
+                border: "1px solid #1a1a1a",
+                borderRadius: 7,
+                padding: "8px 12px",
+                color: "#555",
+                fontSize: 12,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 7,
+                fontFamily: "'Geist', sans-serif",
+                transition: "all 0.1s",
+              }}
+            >
               <Plus size={12} /> New chat
             </button>
           )}
@@ -743,27 +956,68 @@ export default function Orrin() {
 
         {/* Tab content */}
         <div style={{ flex: 1, overflowY: "auto", padding: "8px" }}>
-          {sidebarTab === "chats" && chats.map(chat => (
-            <div key={chat.id} className="chat-item"
-              onClick={() => { setActiveChatId(chat.id); if (isMobile) setSidebarOpen(false); }}
-              style={{ background: chat.id === activeChatId ? "#111" : "transparent" }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: 7, minWidth: 0 }}>
-                <MessageSquare size={10} color="#2a2a2a" style={{ flexShrink: 0 }} />
-                <span style={{ fontSize: 12, color: chat.id === activeChatId ? "#aaa" : "#444", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {chat.title}
-                </span>
+          {sidebarTab === "chats" &&
+            chats.map(chat => (
+              <div
+                key={chat.id}
+                className="chat-item"
+                onClick={() => {
+                  setActiveChatId(chat.id);
+                  if (isMobile) setSidebarOpen(false);
+                }}
+                style={{
+                  background: chat.id === activeChatId ? "#111" : "transparent",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 7,
+                    minWidth: 0,
+                  }}
+                >
+                  <MessageSquare
+                    size={10}
+                    color="#2a2a2a"
+                    style={{ flexShrink: 0 }}
+                  />
+                  <span
+                    style={{
+                      fontSize: 12,
+                      color: chat.id === activeChatId ? "#aaa" : "#444",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    {chat.title}
+                  </span>
+                </div>
+                <button
+                  className="icon-btn"
+                  onClick={e => {
+                    e.stopPropagation();
+                    deleteChat(chat.id);
+                  }}
+                  style={{ color: "#1e1e1e", padding: 4, flexShrink: 0 }}
+                >
+                  <Trash2 size={10} />
+                </button>
               </div>
-              <button className="icon-btn" onClick={e => { e.stopPropagation(); deleteChat(chat.id); }}
-                style={{ color: "#1e1e1e", padding: 4, flexShrink: 0 }}>
-                <Trash2 size={10} />
-              </button>
-            </div>
-          ))}
+            ))}
 
           {sidebarTab === "memory" && (
             <div style={{ padding: "4px" }}>
-              <p style={{ fontSize: 9, color: "#2a2a2a", fontFamily: "'Geist Mono', monospace", letterSpacing: "0.08em", marginBottom: 8 }}>
+              <p
+                style={{
+                  fontSize: 9,
+                  color: "#2a2a2a",
+                  fontFamily: "'Geist Mono', monospace",
+                  letterSpacing: "0.08em",
+                  marginBottom: 8,
+                }}
+              >
                 WHAT ORRIN REMEMBERS ABOUT YOU
               </p>
               <textarea
@@ -774,19 +1028,43 @@ export default function Orrin() {
                 rows={10}
               />
               <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
-                <button onClick={saveMemory} style={{
-                  flex: 1, background: "#111", border: "1px solid #1e1e1e",
-                  borderRadius: 6, padding: "7px 0", color: memorySaved ? "#888" : "#444",
-                  fontSize: 10, cursor: "pointer", fontFamily: "'Geist Mono', monospace",
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 5,
-                }}>
+                <button
+                  onClick={saveMemory}
+                  style={{
+                    flex: 1,
+                    background: "#111",
+                    border: "1px solid #1e1e1e",
+                    borderRadius: 6,
+                    padding: "7px 0",
+                    color: memorySaved ? "#888" : "#444",
+                    fontSize: 10,
+                    cursor: "pointer",
+                    fontFamily: "'Geist Mono', monospace",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 5,
+                  }}
+                >
                   <Save size={9} /> {memorySaved ? "SAVED ✓" : "SAVE"}
                 </button>
-                <button onClick={() => { setMemoryEdited(""); saveGlobalMemory(""); setGlobalMemory(""); }} style={{
-                  background: "transparent", border: "1px solid #111",
-                  borderRadius: 6, padding: "7px 12px",
-                  color: "#2a2a2a", fontSize: 10, cursor: "pointer", fontFamily: "'Geist Mono', monospace",
-                }}>
+                <button
+                  onClick={() => {
+                    setMemoryEdited("");
+                    saveGlobalMemory("");
+                    setGlobalMemory("");
+                  }}
+                  style={{
+                    background: "transparent",
+                    border: "1px solid #111",
+                    borderRadius: 6,
+                    padding: "7px 12px",
+                    color: "#2a2a2a",
+                    fontSize: 10,
+                    cursor: "pointer",
+                    fontFamily: "'Geist Mono', monospace",
+                  }}
+                >
                   CLEAR
                 </button>
               </div>
@@ -795,159 +1073,404 @@ export default function Orrin() {
 
           {sidebarTab === "reminders" && (
             <div style={{ padding: "4px" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                <p style={{ fontSize: 9, color: "#2a2a2a", fontFamily: "'Geist Mono', monospace", letterSpacing: "0.08em" }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 10,
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: 9,
+                    color: "#2a2a2a",
+                    fontFamily: "'Geist Mono', monospace",
+                    letterSpacing: "0.08em",
+                  }}
+                >
                   {pendingReminders.length} PENDING
                 </p>
-                <button onClick={() => { clearFiredReminders(); setReminders(loadReminders()); }}
-                  style={{ background: "none", border: "none", cursor: "pointer", fontSize: 9, color: "#2a2a2a", fontFamily: "'Geist Mono', monospace" }}>
+                <button
+                  onClick={() => {
+                    clearFiredReminders();
+                    setReminders(loadReminders());
+                  }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: 9,
+                    color: "#2a2a2a",
+                    fontFamily: "'Geist Mono', monospace",
+                  }}
+                >
                   CLEAR DONE
                 </button>
               </div>
 
               {notifPermission !== "granted" && (
-                <button onClick={requestNotifPermission} style={{
-                  width: "100%", background: "#0f0f0f", border: "1px solid #1a1a1a",
-                  borderRadius: 7, padding: "8px 12px", color: "#666", fontSize: 11,
-                  cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7,
-                  fontFamily: "'Geist', sans-serif", marginBottom: 10,
-                }}>
+                <button
+                  onClick={requestNotifPermission}
+                  style={{
+                    width: "100%",
+                    background: "#0f0f0f",
+                    border: "1px solid #1a1a1a",
+                    borderRadius: 7,
+                    padding: "8px 12px",
+                    color: "#666",
+                    fontSize: 11,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 7,
+                    fontFamily: "'Geist', sans-serif",
+                    marginBottom: 10,
+                  }}
+                >
                   <Bell size={11} /> Enable Notifications
                 </button>
               )}
 
               {reminders.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "24px 0", color: "#222", fontSize: 11, fontFamily: "'Geist Mono', monospace" }}>
-                  NO REMINDERS YET<br />
-                  <span style={{ fontSize: 9, marginTop: 4, display: "block" }}>Try: "remind me at 3pm to..."</span>
+                <div
+                  style={{
+                    textAlign: "center",
+                    padding: "24px 0",
+                    color: "#222",
+                    fontSize: 11,
+                    fontFamily: "'Geist Mono', monospace",
+                  }}
+                >
+                  NO REMINDERS YET
+                  <br />
+                  <span
+                    style={{
+                      fontSize: 9,
+                      marginTop: 4,
+                      display: "block",
+                    }}
+                  >
+                    Try: "remind me at 3pm to..."
+                  </span>
                 </div>
               ) : (
-                [...reminders].sort((a, b) => a.time - b.time).map(r => (
-                  <div key={r.id} style={{
-                    background: "#0d0d0d", border: "1px solid #141414",
-                    borderRadius: 7, padding: "10px 12px", marginBottom: 6,
-                    opacity: r.fired ? 0.3 : 1,
-                  }}>
-                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ fontSize: 12, color: r.fired ? "#444" : "#aaa", marginBottom: 4, lineHeight: 1.3 }}>{r.text}</p>
-                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                          <Clock size={8} color="#333" />
-                          <span style={{ fontSize: 9, color: "#333", fontFamily: "'Geist Mono', monospace" }}>
-                            {new Date(r.time).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-                          </span>
-                          {r.fired && <span style={{ fontSize: 9, color: "#2a2a2a", fontFamily: "'Geist Mono', monospace" }}>· DONE</span>}
+                [...reminders]
+                  .sort((a, b) => a.time - b.time)
+                  .map(r => (
+                    <div
+                      key={r.id}
+                      style={{
+                        background: "#0d0d0d",
+                        border: "1px solid #141414",
+                        borderRadius: 7,
+                        padding: "10px 12px",
+                        marginBottom: 6,
+                        opacity: r.fired ? 0.3 : 1,
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          justifyContent: "space-between",
+                          gap: 8,
+                        }}
+                      >
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p
+                            style={{
+                              fontSize: 12,
+                              color: r.fired ? "#444" : "#aaa",
+                              marginBottom: 4,
+                              lineHeight: 1.3,
+                            }}
+                          >
+                            {r.text}
+                          </p>
+                          <div
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 4,
+                            }}
+                          >
+                            <Clock size={8} color="#333" />
+                            <span
+                              style={{
+                                fontSize: 9,
+                                color: "#333",
+                                fontFamily: "'Geist Mono', monospace",
+                              }}
+                            >
+                              {new Date(r.time).toLocaleString("en-GB", {
+                                day: "numeric",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                            {r.fired && (
+                              <span
+                                style={{
+                                  fontSize: 9,
+                                  color: "#2a2a2a",
+                                  fontFamily: "'Geist Mono', monospace",
+                                }}
+                              >
+                                · DONE
+                              </span>
+                            )}
+                          </div>
                         </div>
+                        <button
+                          className="icon-btn"
+                          onClick={() => {
+                            deleteReminder(r.id);
+                            setReminders(loadReminders());
+                          }}
+                          style={{
+                            color: "#222",
+                            padding: 3,
+                            flexShrink: 0,
+                          }}
+                        >
+                          <Trash2 size={10} />
+                        </button>
                       </div>
-                      <button className="icon-btn" onClick={() => { deleteReminder(r.id); setReminders(loadReminders()); }}
-                        style={{ color: "#222", padding: 3, flexShrink: 0 }}>
-                        <Trash2 size={10} />
-                      </button>
                     </div>
-                  </div>
-                ))
+                  ))
               )}
             </div>
           )}
         </div>
 
         {/* Storage */}
-        <div style={{ padding: "10px 12px 14px", borderTop: "1px solid #0f0f0f", flexShrink: 0 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-            <span style={{ fontSize: 9, color: "#222", fontFamily: "'Geist Mono', monospace" }}>STORAGE</span>
-            <span style={{ fontSize: 9, color: "#222", fontFamily: "'Geist Mono', monospace" }}>{formatBytes(storageInfo.used)}/{formatBytes(storageInfo.total)}</span>
+        <div
+          style={{
+            padding: "10px 12px 14px",
+            borderTop: "1px solid #0f0f0f",
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              marginBottom: 5,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 9,
+                color: "#222",
+                fontFamily: "'Geist Mono', monospace",
+              }}
+            >
+              STORAGE
+            </span>
+            <span
+              style={{
+                fontSize: 9,
+                color: "#222",
+                fontFamily: "'Geist Mono', monospace",
+              }}
+            >
+              {formatBytes(storageInfo.used)}/{formatBytes(storageInfo.total)}
+            </span>
           </div>
-          <div style={{ height: 2, background: "#0f0f0f", borderRadius: 1, overflow: "hidden" }}>
-            <div style={{ width: `${Math.min(storageInfo.percent, 100)}%`, height: "100%", background: storageColor, borderRadius: 1, transition: "width 0.3s" }} />
+          <div
+            style={{
+              height: 2,
+              background: "#0f0f0f",
+              borderRadius: 1,
+              overflow: "hidden",
+            }}
+          >
+            <div
+              style={{
+                width: `${Math.min(storageInfo.percent, 100)}%`,
+                height: "100%",
+                background: storageColor,
+                borderRadius: 1,
+                transition: "width 0.3s",
+              }}
+            />
           </div>
         </div>
       </div>
 
       {/* ── Main ────────────────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
-
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+          minWidth: 0,
+        }}
+      >
         {/* Header */}
-        <div style={{
-          flexShrink: 0,
-          padding: isMobile ? "12px 14px" : "11px 20px",
-          borderBottom: "1px solid #0f0f0f",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          background: "#080808",
-          gap: 8,
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-            <button className="icon-btn" onClick={() => setSidebarOpen(p => !p)} style={{ color: "#333", padding: 4, flexShrink: 0 }}>
+        <div
+          style={{
+            flexShrink: 0,
+            padding: isMobile ? "12px 14px" : "11px 20px",
+            borderBottom: "1px solid #0f0f0f",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            background: "#080808",
+            gap: 8,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              minWidth: 0,
+            }}
+          >
+            <button
+              className="icon-btn"
+              onClick={() => setSidebarOpen(p => !p)}
+              style={{ color: "#333", padding: 4, flexShrink: 0 }}
+            >
               <Menu size={16} />
             </button>
-            <span style={{
-              fontSize: isMobile ? 12 : 11, color: "#333",
-              fontFamily: "'Geist Mono', monospace",
-              whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-              maxWidth: isMobile ? 140 : 200,
-            }}>
+            <span
+              style={{
+                fontSize: isMobile ? 12 : 11,
+                color: "#333",
+                fontFamily: "'Geist Mono', monospace",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                maxWidth: isMobile ? 140 : 200,
+              }}
+            >
               {activeChat?.title || "ORRIN"}
             </span>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              flexShrink: 0,
+            }}
+          >
             {/* Memory toggle */}
             {activeChat && (
-              <button onClick={() => toggleMemory(activeChatId)} style={{
-                background: "none",
-                border: "1px solid #111",
-                borderRadius: 5, padding: isMobile ? "5px 8px" : "4px 8px",
-                cursor: "pointer", display: "flex", alignItems: "center", gap: 4,
-                color: activeChat.memory ? "#555" : "#2a2a2a",
-                fontSize: 10, fontFamily: "'Geist Mono', monospace",
-              }}>
-                {activeChat.memory
-                  ? <Brain size={10} />
-                  : <Brain size={10} style={{ opacity: 0.3 }} />
-                }
+              <button
+                onClick={() => toggleMemory(activeChatId)}
+                style={{
+                  background: "none",
+                  border: "1px solid #111",
+                  borderRadius: 5,
+                  padding: isMobile ? "5px 8px" : "4px 8px",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 4,
+                  color: activeChat.memory ? "#555" : "#2a2a2a",
+                  fontSize: 10,
+                  fontFamily: "'Geist Mono', monospace",
+                }}
+              >
+                {activeChat.memory ? (
+                  <Brain size={10} />
+                ) : (
+                  <Brain size={10} style={{ opacity: 0.3 }} />
+                )}
                 {!isMobile && (activeChat.memory ? "MEM" : "OFF")}
               </button>
             )}
 
             {/* Reminders bell */}
-            <button onClick={() => { setSidebarTab("reminders"); setSidebarOpen(true); }} style={{
-              background: "none", border: "1px solid #111", borderRadius: 5,
-              padding: isMobile ? "5px 8px" : "4px 8px",
-              cursor: "pointer", display: "flex", alignItems: "center", gap: 4,
-              color: pendingReminders.length > 0 ? "#666" : "#2a2a2a", fontSize: 10,
-              fontFamily: "'Geist Mono', monospace", position: "relative",
-            }}>
+            <button
+              onClick={() => {
+                setSidebarTab("reminders");
+                setSidebarOpen(true);
+              }}
+              style={{
+                background: "none",
+                border: "1px solid #111",
+                borderRadius: 5,
+                padding: isMobile ? "5px 8px" : "4px 8px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                color:
+                  pendingReminders.length > 0 ? "#666" : "#2a2a2a",
+                fontSize: 10,
+                fontFamily: "'Geist Mono', monospace",
+                position: "relative",
+              }}
+            >
               <Bell size={10} />
               {pendingReminders.length > 0 && (
-                <span style={{
-                  position: "absolute", top: -4, right: -4,
-                  background: "#333", color: "#888",
-                  width: 14, height: 14, borderRadius: "50%",
-                  fontSize: 8, display: "flex", alignItems: "center", justifyContent: "center",
-                  fontFamily: "'Geist Mono', monospace",
-                }}>
+                <span
+                  style={{
+                    position: "absolute",
+                    top: -4,
+                    right: -4,
+                    background: "#333",
+                    color: "#888",
+                    width: 14,
+                    height: 14,
+                    borderRadius: "50%",
+                    fontSize: 8,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontFamily: "'Geist Mono', monospace",
+                  }}
+                >
                   {pendingReminders.length}
                 </span>
               )}
             </button>
 
             {/* Downloader */}
-            <a href="/downloader" style={{
-              background: "none", border: "1px solid #111", borderRadius: 5,
-              padding: isMobile ? "5px 8px" : "4px 8px",
-              display: "flex", alignItems: "center", gap: 4,
-              color: "#2a2a2a", fontSize: 10, textDecoration: "none",
-              fontFamily: "'Geist Mono', monospace",
-            }}>
+            <a
+              href="/downloader"
+              style={{
+                background: "none",
+                border: "1px solid #111",
+                borderRadius: 5,
+                padding: isMobile ? "5px 8px" : "4px 8px",
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+                color: "#2a2a2a",
+                fontSize: 10,
+                textDecoration: "none",
+                fontFamily: "'Geist Mono', monospace",
+              }}
+            >
               <Download size={10} />
               {!isMobile && "DL"}
             </a>
 
             {showCompressPrompt && (
-              <button onClick={handleCompress} disabled={compressing} style={{
-                background: "#0f0f0f", border: "1px solid #1a1a1a", borderRadius: 5,
-                padding: "4px 8px", cursor: "pointer", color: "#555",
-                fontSize: 10, fontFamily: "'Geist Mono', monospace",
-              }}>
+              <button
+                onClick={handleCompress}
+                disabled={compressing}
+                style={{
+                  background: "#0f0f0f",
+                  border: "1px solid #1a1a1a",
+                  borderRadius: 5,
+                  padding: "4px 8px",
+                  cursor: "pointer",
+                  color: "#555",
+                  fontSize: 10,
+                  fontFamily: "'Geist Mono', monospace",
+                }}
+              >
                 {compressing ? "…" : "⚠"}
               </button>
             )}
@@ -955,114 +1478,332 @@ export default function Orrin() {
         </div>
 
         {/* Chat area */}
-        <div ref={chatRef} onScroll={handleScroll} style={{ flex: 1, overflowY: "auto", padding: isMobile ? "16px 0" : "20px 0" }}>
+        <div
+          ref={chatRef}
+          onScroll={handleScroll}
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            padding: isMobile ? "16px 0" : "20px 0",
+          }}
+        >
           {messages.length === 0 && (
-            <div style={{ height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, opacity: 0.15 }}>
-              <div style={{ width: 1, height: 40, background: "linear-gradient(to bottom, transparent, #666)" }} />
-              <span style={{ fontSize: isMobile ? 11 : 10, color: "#888", fontFamily: "'Geist Mono', monospace", letterSpacing: "0.2em" }}>ORRIN READY</span>
-              <div style={{ width: 1, height: 40, background: "linear-gradient(to bottom, #666, transparent)" }} />
+            <div
+              style={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+                opacity: 0.15,
+              }}
+            >
+              <div
+                style={{
+                  width: 1,
+                  height: 40,
+                  background: "linear-gradient(to bottom, transparent, #666)",
+                }}
+              />
+              <span
+                style={{
+                  fontSize: isMobile ? 11 : 10,
+                  color: "#888",
+                  fontFamily: "'Geist Mono', monospace",
+                  letterSpacing: "0.2em",
+                }}
+              >
+                ORRIN READY
+              </span>
+              <div
+                style={{
+                  width: 1,
+                  height: 40,
+                  background: "linear-gradient(to bottom, #666, transparent)",
+                }}
+              />
             </div>
           )}
 
           {messages.map(msg => (
-            <div key={msg.id} className="msg" style={{
-              maxWidth: isMobile ? "100%" : 720,
-              width: "100%", margin: "0 auto",
-              padding: isMobile ? "4px 12px" : "4px 24px",
-            }}>
-              <div style={{ display: "flex", gap: isMobile ? 8 : 12, flexDirection: msg.role === "user" ? "row-reverse" : "row", alignItems: "flex-start" }}>
-                <div style={{
-                  width: 20, height: 20, borderRadius: 4, flexShrink: 0,
-                  background: "#0d0d0d", border: "1px solid #1a1a1a",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 8, fontWeight: 700, color: "#333",
-                  fontFamily: "'Geist Mono', monospace", marginTop: 2,
-                }}>
+            <div
+              key={msg.id}
+              className="msg"
+              style={{
+                maxWidth: isMobile ? "100%" : 720,
+                width: "100%",
+                margin: "0 auto",
+                padding: isMobile ? "4px 12px" : "4px 24px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  gap: isMobile ? 8 : 12,
+                  flexDirection: msg.role === "user" ? "row-reverse" : "row",
+                  alignItems: "flex-start",
+                }}
+              >
+                <div
+                  style={{
+                    width: 20,
+                    height: 20,
+                    borderRadius: 4,
+                    flexShrink: 0,
+                    background: "#0d0d0d",
+                    border: "1px solid #1a1a1a",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 8,
+                    fontWeight: 700,
+                    color: "#333",
+                    fontFamily: "'Geist Mono', monospace",
+                    marginTop: 2,
+                  }}
+                >
                   {msg.role === "user" ? "U" : "AI"}
                 </div>
                 <div style={{ maxWidth: `calc(100% - ${isMobile ? 32 : 36}px)` }}>
                   {msg.imagePreview && (
-                    <img src={msg.imagePreview} alt="uploaded" style={{ maxWidth: 180, maxHeight: 140, borderRadius: 6, objectFit: "cover", marginBottom: 6, border: "1px solid #1a1a1a", display: "block" }} />
+                    <img
+                      src={msg.imagePreview}
+                      alt="uploaded"
+                      style={{
+                        maxWidth: 180,
+                        maxHeight: 140,
+                        borderRadius: 6,
+                        objectFit: "cover",
+                        marginBottom: 6,
+                        border: "1px solid #1a1a1a",
+                        display: "block",
+                      }}
+                    />
                   )}
-                  <div style={{
-                    background: msg.role === "user" ? "#0d0d0d" : "transparent",
-                    border: msg.role === "user" ? "1px solid #141414" : "none",
-                    borderRadius: 8,
-                    padding: msg.role === "user" ? "8px 12px" : "2px 0",
-                    fontSize: isMobile ? 14 : 13.5,
-                    lineHeight: 1.75, color: "#b8b8b8",
-                  }}
-                    dangerouslySetInnerHTML={{ __html: msg.content ? renderMarkdown(msg.content) : "" }}
+                  <div
+                    style={{
+                      background:
+                        msg.role === "user" ? "#0d0d0d" : "transparent",
+                      border:
+                        msg.role === "user"
+                          ? "1px solid #141414"
+                          : "none",
+                      borderRadius: 8,
+                      padding:
+                        msg.role === "user" ? "8px 12px" : "2px 0",
+                      fontSize: isMobile ? 14 : 13.5,
+                      lineHeight: 1.75,
+                      color: "#b8b8b8",
+                    }}
+                    dangerouslySetInnerHTML={{
+                      __html: msg.content
+                        ? renderMarkdown(msg.content)
+                        : "",
+                    }}
                   />
                   {msg.videoCard && (
-                    <VideoCardUI card={msg.videoCard} messageId={msg.id} onDownload={handleVideoDownload} onDelete={deleteVideoCard} />
+                    <VideoCardUI
+                      card={msg.videoCard}
+                      messageId={msg.id}
+                      onDownload={handleVideoDownload}
+                      onDelete={deleteVideoCard}
+                    />
                   )}
-                  {fetchingVideo && msg.id === streamingIdRef.current && !msg.videoCard && (
-                    <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 8, color: "#2a2a2a", fontSize: 10, fontFamily: "'Geist Mono', monospace" }}>
-                      <Loader2 size={9} style={{ animation: "spin 1s linear infinite" }} /> FETCHING VIDEO…
-                    </div>
-                  )}
+                  {fetchingVideo &&
+                    msg.id === streamingIdRef.current &&
+                    !msg.videoCard && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 5,
+                          marginTop: 8,
+                          color: "#2a2a2a",
+                          fontSize: 10,
+                          fontFamily: "'Geist Mono', monospace",
+                        }}
+                      >
+                        <Loader2
+                          size={9}
+                          style={{ animation: "spin 1s linear infinite" }}
+                        />{" "}
+                        FETCHING VIDEO…
+                      </div>
+                    )}
                 </div>
               </div>
             </div>
           ))}
 
-          {streaming && messages[messages.length - 1]?.content === "" && (
-            <div style={{ maxWidth: isMobile ? "100%" : 720, width: "100%", margin: "0 auto", padding: isMobile ? "4px 12px" : "4px 24px" }}>
-              <div style={{ display: "flex", gap: isMobile ? 8 : 12, alignItems: "flex-start" }}>
-                <div style={{ width: 20, height: 20, borderRadius: 4, background: "#0d0d0d", border: "1px solid #1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: "#333", fontFamily: "'Geist Mono', monospace" }}>AI</div>
-                <div style={{ paddingTop: 7 }} className="dot"><span /><span /><span /></div>
+          {streaming &&
+            messages[messages.length - 1]?.content === "" && (
+              <div
+                style={{
+                  maxWidth: isMobile ? "100%" : 720,
+                  width: "100%",
+                  margin: "0 auto",
+                  padding: isMobile ? "4px 12px" : "4px 24px",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    gap: isMobile ? 8 : 12,
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 4,
+                      background: "#0d0d0d",
+                      border: "1px solid #1a1a1a",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 8,
+                      color: "#333",
+                      fontFamily: "'Geist Mono', monospace",
+                    }}
+                  >
+                    AI
+                  </div>
+                  <div
+                    style={{
+                      paddingTop: 7,
+                    }}
+                    className="dot"
+                  >
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           <div ref={bottomRef} />
         </div>
 
         {/* Scroll button */}
         {showScrollBtn && (
-          <button onClick={() => bottomRef.current?.scrollIntoView({ behavior: "smooth" })} style={{
-            position: "fixed", bottom: 80, right: 16, width: 30, height: 30,
-            borderRadius: "50%", background: "#111", border: "1px solid #1e1e1e",
-            color: "#444", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-            zIndex: 10,
-          }}>
+          <button
+            onClick={() =>
+              bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+            }
+            style={{
+              position: "fixed",
+              bottom: 80,
+              right: 16,
+              width: 30,
+              height: 30,
+              borderRadius: "50%",
+              background: "#111",
+              border: "1px solid #1e1e1e",
+              color: "#444",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 10,
+            }}
+          >
             <ChevronDown size={13} />
           </button>
         )}
 
         {/* Input */}
-        <div style={{
-          flexShrink: 0,
-          padding: isMobile ? "10px 12px 16px" : "10px 20px 14px",
-          borderTop: "1px solid #0f0f0f",
-          background: "#080808",
-          paddingBottom: isMobile ? "max(16px, env(safe-area-inset-bottom))" : "14px",
-        }}>
-          <div style={{ maxWidth: isMobile ? "100%" : 720, margin: "0 auto" }}>
-
+        <div
+          style={{
+            flexShrink: 0,
+            padding: isMobile ? "10px 12px 16px" : "10px 20px 14px",
+            borderTop: "1px solid #0f0f0f",
+            background: "#080808",
+            paddingBottom: isMobile
+              ? "max(16px, env(safe-area-inset-bottom))"
+              : "14px",
+          }}
+        >
+          <div
+            style={{
+              maxWidth: isMobile ? "100%" : 720,
+              margin: "0 auto",
+            }}
+          >
             {/* Attachments */}
             {(fileContexts.length > 0 || imagePreviewUrl) && (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 5,
+                  marginBottom: 8,
+                }}
+              >
                 {imagePreviewUrl && (
                   <div style={{ position: "relative" }}>
-                    <img src={imagePreviewUrl} alt="preview" style={{ height: 42, width: 42, objectFit: "cover", borderRadius: 5, border: "1px solid #1a1a1a" }} />
-                    <button className="icon-btn" onClick={() => { setImageBase64(null); setImageMimeType(null); setImagePreviewUrl(null); }}
-                      style={{ position: "absolute", top: -4, right: -4, background: "#1a1a1a", borderRadius: "50%", width: 14, height: 14, color: "#666" }}>
+                    <img
+                      src={imagePreviewUrl}
+                      alt="preview"
+                      style={{
+                        height: 42,
+                        width: 42,
+                        objectFit: "cover",
+                        borderRadius: 5,
+                        border: "1px solid #1a1a1a",
+                      }}
+                    />
+                    <button
+                      className="icon-btn"
+                      onClick={() => {
+                        setImageBase64(null);
+                        setImageMimeType(null);
+                        setImagePreviewUrl(null);
+                      }}
+                      style={{
+                        position: "absolute",
+                        top: -4,
+                        right: -4,
+                        background: "#1a1a1a",
+                        borderRadius: "50%",
+                        width: 14,
+                        height: 14,
+                        color: "#666",
+                      }}
+                    >
                       <X size={8} />
                     </button>
                   </div>
                 )}
                 {fileContexts.map(f => (
-                  <div key={f.name} style={{
-                    display: "inline-flex", alignItems: "center", gap: 5,
-                    background: "#0d0d0d", border: "1px solid #141414",
-                    borderRadius: 5, padding: "3px 8px",
-                    fontSize: 10, color: "#333", fontFamily: "'Geist Mono', monospace",
-                  }}>
-                    <Paperclip size={8} />{f.name}
-                    <button className="icon-btn" onClick={() => setFileContexts(prev => prev.filter(x => x.name !== f.name))}
-                      style={{ color: "#2a2a2a" }}>
+                  <div
+                    key={f.name}
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 5,
+                      background: "#0d0d0d",
+                      border: "1px solid #141414",
+                      borderRadius: 5,
+                      padding: "3px 8px",
+                      fontSize: 10,
+                      color: "#333",
+                      fontFamily: "'Geist Mono', monospace",
+                    }}
+                  >
+                    <Paperclip size={8} />
+                    {f.name}
+                    <button
+                      className="icon-btn"
+                      onClick={() =>
+                        setFileContexts(prev =>
+                          prev.filter(x => x.name !== f.name)
+                        )
+                      }
+                      style={{ color: "#2a2a2a" }}
+                    >
                       <X size={8} />
                     </button>
                   </div>
@@ -1070,19 +1811,45 @@ export default function Orrin() {
               </div>
             )}
 
-            <div style={{
-              display: "flex", alignItems: "flex-end", gap: 6,
-              background: "#0b0b0b", border: "1px solid #141414",
-              borderRadius: 12, padding: "8px 10px",
-            }}>
-              <button className="icon-btn" onClick={() => fileRef.current?.click()} style={{ color: "#222", padding: 4, flexShrink: 0 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                gap: 6,
+                background: "#0b0b0b",
+                border: "1px solid #141414",
+                borderRadius: 12,
+                padding: "8px 10px",
+              }}
+            >
+              <button
+                className="icon-btn"
+                onClick={() => fileRef.current?.click()}
+                style={{ color: "#222", padding: 4, flexShrink: 0 }}
+              >
                 <Paperclip size={15} />
               </button>
-              <button className="icon-btn" onClick={() => imageRef.current?.click()} style={{ color: "#222", padding: 4, flexShrink: 0 }}>
+              <button
+                className="icon-btn"
+                onClick={() => imageRef.current?.click()}
+                style={{ color: "#222", padding: 4, flexShrink: 0 }}
+              >
                 <ImageIcon size={15} />
               </button>
-              <input ref={fileRef} type="file" accept=".pdf,.docx,.txt" style={{ display: "none" }} onChange={handleFile} />
-              <input ref={imageRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImage} />
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".pdf,.docx,.txt"
+                style={{ display: "none" }}
+                onChange={handleFile}
+              />
+              <input
+                ref={imageRef}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handleImage}
+              />
 
               <textarea
                 ref={textareaRef}
@@ -1092,29 +1859,62 @@ export default function Orrin() {
                 placeholder="Ask anything…"
                 rows={1}
                 style={{
-                  flex: 1, background: "none", border: "none", outline: "none",
-                  color: "#b8b8b8", fontSize: isMobile ? 15 : 13.5,
+                  flex: 1,
+                  background: "none",
+                  border: "none",
+                  outline: "none",
+                  color: "#b8b8b8",
+                  fontSize: isMobile ? 15 : 13.5,
                   fontFamily: "'Geist', sans-serif",
-                  resize: "none", lineHeight: 1.5, maxHeight: 120, overflowY: "auto",
+                  resize: "none",
+                  lineHeight: 1.5,
+                  maxHeight: 120,
+                  overflowY: "auto",
                   WebkitUserSelect: "text",
                 }}
               />
 
-              <button onClick={sendMessage} disabled={!input.trim() || streaming} style={{
-                background: input.trim() && !streaming ? "#111" : "transparent",
-                border: `1px solid ${input.trim() && !streaming ? "#1e1e1e" : "#0f0f0f"}`,
-                borderRadius: 8, width: 32, height: 32,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: input.trim() && !streaming ? "pointer" : "default",
-                flexShrink: 0, transition: "all 0.1s",
-              }}>
-                <Send size={13} color={input.trim() && !streaming ? "#777" : "#222"} />
+              <button
+                onClick={sendMessage}
+                disabled={!input.trim() || streaming}
+                style={{
+                  background:
+                    input.trim() && !streaming ? "#111" : "transparent",
+                  border: `1px solid ${
+                    input.trim() && !streaming ? "#1e1e1e" : "#0f0f0f"
+                  }`,
+                  borderRadius: 8,
+                  width: 32,
+                  height: 32,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor:
+                    input.trim() && !streaming ? "pointer" : "default",
+                  flexShrink: 0,
+                  transition: "all 0.1s",
+                }}
+              >
+                <Send
+                  size={13}
+                  color={input.trim() && !streaming ? "#777" : "#222"}
+                />
               </button>
             </div>
 
             {!isMobile && (
-              <p style={{ fontSize: 9, color: "#141414", textAlign: "center", marginTop: 6, fontFamily: "'Geist Mono', monospace", letterSpacing: "0.06em" }}>
-                ENTER TO SEND · PASTE URL TO SUMMARIZE · VIDEO LINKS AUTO-DETECTED
+              <p
+                style={{
+                  fontSize: 9,
+                  color: "#141414",
+                  textAlign: "center",
+                  marginTop: 6,
+                  fontFamily: "'Geist Mono', monospace",
+                  letterSpacing: "0.06em",
+                }}
+              >
+                ENTER TO SEND · PASTE URL TO SUMMARIZE · VIDEO LINKS
+                AUTO-DETECTED
               </p>
             )}
           </div>
